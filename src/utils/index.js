@@ -1,6 +1,7 @@
 const mapDBToModel = ({
   id,
   name,
+  title,
   year,
   genre,
   performer,
@@ -9,6 +10,7 @@ const mapDBToModel = ({
 }) => ({
   id,
   name,
+  title,
   year,
   genre,
   performer,
