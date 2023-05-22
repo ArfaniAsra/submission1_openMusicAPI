@@ -31,23 +31,38 @@ class SongsService {
   async getSongs({
     title, performer,
   }) {
-    if (title && performer) {
-      const result = await this._pool.query(`SELECT id, title, performer FROM songs WHERE lower(title) LIKE '%${title}%' AND lower(performer) LIKE '%${performer}%'`);
-      return result.rows.map(mapDBToModel);
-    }
+if (title && performer) {
+  const query = {
+    text: 'SELECT id, title, performer FROM songs WHERE lower(title) LIKE $1 AND lower(performer) LIKE $2',
+    values: [`%${title}%`, `%${performer}%`],
+  };
+  const result = await this._pool.query(query);
+  return result.rows.map(mapDBToModel);
+}
 
-    if (title) {
-      const result = await this._pool.query(`SELECT id, title, performer FROM songs WHERE lower(title) LIKE '%${title}%'`);
-      return result.rows.map(mapDBToModel);
-    }
+if (title) {
+  const query = {
+    text: 'SELECT id, title, performer FROM songs WHERE lower(title) LIKE $1',
+    values: [`%${title}%`],
+  };
+  const result = await this._pool.query(query);
+  return result.rows.map(mapDBToModel);
+}
 
-    if (performer) {
-      const result = await this._pool.query(`SELECT id, title, performer FROM songs WHERE lower(performer) LIKE '%${performer}%'`);
-      return result.rows.map(mapDBToModel);
-    }
+if (performer) {
+  const query = {
+    text: 'SELECT id, title, performer FROM songs WHERE lower(performer) LIKE $1',
+    values: [`%${performer}%`],
+  };
+  const result = await this._pool.query(query);
+  return result.rows.map(mapDBToModel);
+}
 
-    const result = await this._pool.query('SELECT id, title, performer FROM songs');
-    return result.rows.map(mapDBToModel);
+const query = {
+  text: 'SELECT id, title, performer FROM songs',
+};
+const result = await this._pool.query(query);
+return result.rows.map(mapDBToModel);
   }
 
   async getSongById(id) {
