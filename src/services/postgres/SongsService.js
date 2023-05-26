@@ -37,7 +37,7 @@ if (title && performer) {
     values: [`%${title}%`, `%${performer}%`],
   };
   const result = await this._pool.query(query);
-  return result.rows.map(mapDBToModel);
+  return result.rows;
 }
 
 if (title) {
@@ -72,7 +72,7 @@ return result.rows.map(mapDBToModel);
     };
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError('Lagu tidak ditemukan');
     }
 
