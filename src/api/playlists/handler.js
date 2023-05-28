@@ -9,16 +9,11 @@ class PlaylistsHandler {
   }
 
   async postPlaylistHandler(request, h) {
-    console.log('terbaca');
     this._validator.validatePlaylistPayload(request.payload);
-    console.log('validator');
     const { name } = request.payload;
-    console.log(`name:${name}`);
     const { id: credentialId } = request.auth.credentials;
-    console.log(`credentialId:${credentialId}`);
 
     const playlistId = await this._service.addPlaylist({ name, owner: credentialId });
-    console.log(`playlistId:${playlistId}`);
 
     const response = h.response({
       status: 'success',
@@ -32,9 +27,7 @@ class PlaylistsHandler {
 
   async getPlaylistsHandler(request) {
     const { id: credentialId } = request.auth.credentials;
-    console.log(credentialId);
     const playlists = await this._service.getPlaylists({ owner: credentialId });
-    console.log(playlists);
     return {
       status: 'success',
       data: {

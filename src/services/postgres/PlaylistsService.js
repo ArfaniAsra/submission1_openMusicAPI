@@ -14,7 +14,6 @@ class PlaylistsService {
 
   async addPlaylist({ name, owner }) {
     const id = `playlist-${nanoid(16)}`;
-    console.log(id);
     const query = {
       text: 'INSERT INTO playlists VALUES($1, $2, $3) RETURNING id',
       values: [id, name, owner],
@@ -38,7 +37,6 @@ class PlaylistsService {
     };
 
     const result = await this._pool.query(query);
-    console.log(`result.rows: ${result.rows}`);
     return result.rows;
   }
 

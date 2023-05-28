@@ -13,8 +13,6 @@ class PlaylistSongsService {
   }
 
   async addSongToPlaylist({ owner, playlistId, songId }) {
-    console.log(`songId service: ${songId}`);
-    console.log(`playlistId service: ${playlistId}`);
     const id = nanoid(16);
     const queryCheckSongs = {
       text: 'SELECT * FROM songs WHERE id = $1',
@@ -22,24 +20,19 @@ class PlaylistSongsService {
     };
 
     const resultCheckSongs = await this._pool.query(queryCheckSongs);
-    // console.log(resultCheckSongs.rows.length);
     if (!resultCheckSongs.rows.length) {
       throw new NotFoundError('Id lagu tidak valid');
     }
 
     await this.verifyPlaylistOwner(owner);
-    // console.log('Sebelum query');
     const query = {
       text: 'INSERT INTO playlist_songs VALUES($1, $2, $3) RETURNING id',
       values: [id, playlistId, songId],
     };
-    // console.log('Sebelum result');
     const result = await this._pool.query(query);
-    // console.log(`result: ${result.rows.length}`);
     if (!result.rows.length) {
       throw new InvariantError('Lagu gagal ditambahkan ke dalam playlist');
     }
-    // console.log(result);
     return result.rows[0].id;
   }
 

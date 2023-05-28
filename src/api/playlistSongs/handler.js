@@ -11,15 +11,11 @@ class PlaylistSongsHandler {
   async postPlaylistSongsHandler(request, h) {
     this._validator.validatePlaylistSongsPayload(request.payload);
     const { songId } = request.payload;
-    // console.log(`songId: ${songId}`);
     const { playlistId } = request.params;
-    console.log(`playlistId: ${playlistId}`);
     const { id: credentialId } = request.auth.credentials;
-    console.log(`credentialId: ${credentialId}`);
     await this._service.addSongToPlaylist({
       owner: credentialId, playlistId, songId,
     });
-    console.log('addSongToPlaylist selesai');
     const response = h.response({
       status: 'success',
       message: 'Lagu berhasil ditambahkan ke playlist',
