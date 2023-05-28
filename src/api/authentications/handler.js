@@ -42,13 +42,16 @@ class AuthenticationsHandler {
     const { id } = this._tokenManager.verifyRefreshToken(refreshToken);
 
     const accessToken = this._tokenManager.generateAccessToken({ id });
-    return {
+
+    const response = h.response({
       status: 'success',
       message: 'Access Token berhasil diperbarui',
       data: {
         accessToken,
       },
-    };
+    });
+    response.code(200);
+    return response;
   }
 
   async deleteAuthenticationsHandler(request, h) {
@@ -58,10 +61,12 @@ class AuthenticationsHandler {
     await this._authenticationsService.verifyRefreshToken(refreshToken);
     await this._authenticationsService.deleteRefreshToken(refreshToken);
 
-    return {
+    const response = h.response({
       status: 'success',
       message: 'Refresh token berhasil dihapus',
-    };
+    });
+    response.code(200);
+    return response;
   }
 }
 

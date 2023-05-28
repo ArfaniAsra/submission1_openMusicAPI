@@ -3,7 +3,7 @@
 require('dotenv').config();
 
 const Hapi = require('@hapi/hapi');
-// const Jwt = require('@hapi/jwt');
+const Jwt = require('@hapi/jwt');
 const ClientError = require('./exceptions/ClientError');
 
 // albums
@@ -27,11 +27,22 @@ const AuthenticationsService = require('./services/postgres/AuthenticationsServi
 const TokenManager = require('./tokenize/TokenManager');
 const AuthenticationsValidator = require('./validator/authentications');
 
+// playlists
+const playlists = require('./api/playlists');
+const PlaylistsService = require('./services/postgres/PlaylistsService');
+const PlaylistsValidator = require('./validator/playlists');
+
+// playlist_songs
+const playlistSongs = require('./api/playlistSongs');
+const PlaylistSongsService = require('./services/postgres/PlaylistSongsService');
+
 const init = async () => {
   const albumsService = new AlbumsService();
   const songsService = new SongsService();
   const usersService = new UsersService();
   const authenticationsService = new AuthenticationsService();
+  const playlistsService = new PlaylistsService();
+  const playlistSongsService = new PlaylistSongsService();
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -43,8 +54,6 @@ const init = async () => {
     },
   });
 
-  /**
-   * Kode dibawah ini belum tentu digunakan
   // registrasi plugin eksternal
   await server.register([
     {
@@ -68,7 +77,6 @@ const init = async () => {
       },
     }),
   });
-   */
 
   await server.register([
     {
@@ -101,11 +109,26 @@ const init = async () => {
         validator: AuthenticationsValidator,
       },
     },
+    {
+      plugin: playlists,
+      options: {
+        service: playlistsService,
+        validator: PlaylistsValidator,
+      },
+    },
+    {
+      plugin: playlistSongs,
+      options: {
+        service: playlistSongsService,
+        validator: PlaylistsValidator,
+      },
+    },
   ]);
 
   server.ext('onPreResponse', (request, h) => {
     // mendapatkan konteks response dari request
     const { response } = request;
+    console.error(response);
     if (response instanceof Error) {
       // penanganan client error secara internal.
       if (response instanceof ClientError) {
