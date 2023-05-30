@@ -13,6 +13,10 @@ class PlaylistSongsHandler {
     const { songId } = request.payload;
     const { playlistId } = request.params;
     const { id: credentialId } = request.auth.credentials;
+
+    await this._service.verifySongExists(songId);
+    await this._service.verifyPlaylistAccess(playlistId, credentialId);
+    await this._service.addActivity(playlistId, songId, credentialId, 'add');
     await this._service.addSongToPlaylist({
       owner: credentialId, playlistId, songId,
     });
@@ -43,16 +47,34 @@ class PlaylistSongsHandler {
 
   async deletePlaylistByIdSongsHandler(request, h) {
     this._validator.validatePlaylistSongsPayload(request.payload);
-    const { id } = request.params;
-    this._service.deleteSongByIdFromPlaylist(id);
+    const { playlistId } = request.params;
+    const { songId } = request.payload;
+    const { id: credentialId } = request.auth.credentials;
+
+    await this._service.verifyPlaylistAccess(playlistId, credentialId);
+    await this._service.addActivity(playlistId, songId, credentialId, 'delete');
+    await this._service.deleteSongByIdFromPlaylist(credentialId, songId);
 
     const response = h.response({
-
       status: 'success',
       message: 'Lagu dari playlist berhasil dihapus',
     });
     response.code(200);
     return response;
+  }
+
+  async getActivitiesHandler(request) {
+    const { id } = request.params;
+    const { id: credentialId } = request.auth.credentials;
+    const activitiesResult = await this._service.getActivities(credentialId, id);
+
+    return {
+      status: 'success',
+      data: {
+        playlistId: id,
+        activities: activitiesResult,
+      },
+    };
   }
 }
 

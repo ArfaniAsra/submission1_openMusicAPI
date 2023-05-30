@@ -29,8 +29,6 @@ class PlaylistsService {
   }
 
   async getPlaylists({ owner }) {
-    // await this.verifyPlaylistOwner(owner);
-
     const query = {
       text: 'SELECT playlists.id, playlists.name, users.username FROM playlists INNER JOIN users ON playlists.owner = users.id WHERE owner = $1',
       values: [owner],
@@ -55,22 +53,37 @@ class PlaylistsService {
     }
   }
 
-  async verifyPlaylistOwner(owner) {
+  async verifyPlaylistOwner(playlistId, owner) {
     const query = {
-      text: 'SELECT * FROM playlists WHERE owner = $1',
-      values: [owner],
+      text: 'SELECT * FROM playlists WHERE id = $1',
+      values: [playlistId],
     };
 
     const result = await this._pool.query(query);
 
     if (!result.rows.length) {
-      throw new NotFoundError('Playlist oleh owner ini tidak ditemukan');
+      throw new InvariantError('Id playlist tidak ditemukan');
     }
 
     const playlist = result.rows[0];
 
     if (playlist.owner !== owner) {
       throw new AuthorizationError('Anda tidak berhak mengakses resource ini');
+    }
+  }
+
+  async verifyPlaylistAccess(playlistId, userId) {
+    try {
+      await this.verifyNoteOwner(playlistId, userId);
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        throw error;
+      }
+      try {
+        await this._collaborationService.verifyCollaborator(playlistId, userId);
+      } catch {
+        throw error;
+      }
     }
   }
 }

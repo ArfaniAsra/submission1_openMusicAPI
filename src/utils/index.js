@@ -7,7 +7,7 @@ const mapDBToModel = ({
   genre,
   performer,
   duration,
-  albumId,
+  album_id,
   playlist_id,
   song_id,
 }) => ({
@@ -18,7 +18,7 @@ const mapDBToModel = ({
   genre,
   performer,
   duration,
-  albumId,
+  albumId: album_id,
   playlistId: playlist_id,
   songId: song_id,
 });
