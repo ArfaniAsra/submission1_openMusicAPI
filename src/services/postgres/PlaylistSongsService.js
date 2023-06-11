@@ -177,7 +177,6 @@ class PlaylistSongsService {
     if (!resultSong.rowCount) {
       throw new NotFoundError('Lagu tidak ditemukan');
     }
-
     if (!resultPlaylist.rows.length) {
       throw new NotFoundError('Playlist tidak ditemukan');
     }
