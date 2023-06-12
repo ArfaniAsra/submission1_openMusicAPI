@@ -6,8 +6,8 @@ const Hapi = require('@hapi/hapi');
 const Jwt = require('@hapi/jwt');
 const path = require('path');
 const Inert = require('@hapi/inert');
-const ClientError = require('./exceptions/ClientError');
 const config = require('./utils/config');
+const ClientError = require('./exceptions/ClientError');
 
 // albums
 const albums = require('./api/albums');
@@ -54,8 +54,16 @@ const uploads = require('./api/uploads');
 const StorageService = require('./services/storage/StorageService');
 const UploadsValidator = require('./validator/uploads');
 
+// cache
+const CacheService = require('./services/redis/CacheService');
+
+// likes
+const likes = require('./api/likes');
+const LikesService = require('./services/postgres/LikesService');
+
 const init = async () => {
-  const albumsService = new AlbumsService();
+  const cacheService = new CacheService();
+  const albumsService = new AlbumsService(cacheService);
   const songsService = new SongsService();
   const usersService = new UsersService();
   const authenticationsService = new AuthenticationsService();
@@ -63,6 +71,7 @@ const init = async () => {
   const playlistSongsService = new PlaylistSongsService();
   const collaborationsService = new CollaborationsService();
   const storageService = new StorageService(path.resolve(__dirname, 'api/uploads/file/images'));
+  const likesService = new LikesService(cacheService);
 
   const server = Hapi.server({
     port: config.app.port,
@@ -171,6 +180,12 @@ const init = async () => {
         validator: UploadsValidator,
       },
     },
+    {
+      plugin: likes,
+      options: {
+        service: likesService, albumsService,
+      },
+    },
   ]);
 
   server.ext('onPreResponse', (request, h) => {
@@ -196,7 +211,6 @@ const init = async () => {
         status: 'error',
         message: 'terjadi kegagalan pada server kami',
       });
-      console.log(response);
       newResponse.code(500);
       return newResponse;
     }
