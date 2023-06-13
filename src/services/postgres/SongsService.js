@@ -12,7 +12,7 @@ class SongsService {
   async addSong({
     title, year, genre, performer, duration, albumId,
   }) {
-    const id = nanoid(16);
+    const id = `song-${nanoid(16)}`;
 
     const query = {
       text: 'INSERT INTO songs VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id',
@@ -31,23 +31,38 @@ class SongsService {
   async getSongs({
     title, performer,
   }) {
-    if (title && performer) {
-      const result = await this._pool.query(`SELECT id, title, performer FROM songs WHERE lower(title) LIKE '%${title}%' AND lower(performer) LIKE '%${performer}%'`);
-      return result.rows.map(mapDBToModel);
-    }
+if (title && performer) {
+  const query = {
+    text: 'SELECT id, title, performer FROM songs WHERE lower(title) LIKE $1 AND lower(performer) LIKE $2',
+    values: [`%${title}%`, `%${performer}%`],
+  };
+  const result = await this._pool.query(query);
+  return result.rows;
+}
 
-    if (title) {
-      const result = await this._pool.query(`SELECT id, title, performer FROM songs WHERE lower(title) LIKE '%${title}%'`);
-      return result.rows.map(mapDBToModel);
-    }
+if (title) {
+  const query = {
+    text: 'SELECT id, title, performer FROM songs WHERE lower(title) LIKE $1',
+    values: [`%${title}%`],
+  };
+  const result = await this._pool.query(query);
+  return result.rows.map(mapDBToModel);
+}
 
-    if (performer) {
-      const result = await this._pool.query(`SELECT id, title, performer FROM songs WHERE lower(performer) LIKE '%${performer}%'`);
-      return result.rows.map(mapDBToModel);
-    }
+if (performer) {
+  const query = {
+    text: 'SELECT id, title, performer FROM songs WHERE lower(performer) LIKE $1',
+    values: [`%${performer}%`],
+  };
+  const result = await this._pool.query(query);
+  return result.rows.map(mapDBToModel);
+}
 
-    const result = await this._pool.query('SELECT id, title, performer FROM songs');
-    return result.rows.map(mapDBToModel);
+const query = {
+  text: 'SELECT id, title, performer FROM songs',
+};
+const result = await this._pool.query(query);
+return result.rows.map(mapDBToModel);
   }
 
   async getSongById(id) {
@@ -57,7 +72,7 @@ class SongsService {
     };
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError('Lagu tidak ditemukan');
     }
 
@@ -68,7 +83,7 @@ class SongsService {
     title, year, genre, performer, duration, albumId,
   }) {
     const query = {
-      text: 'UPDATE songs SET title = $1, year = $2, genre = $3, performer = $4, duration = $5, "albumId" = $6 WHERE id = $7 RETURNING id',
+      text: 'UPDATE songs SET title = $1, year = $2, genre = $3, performer = $4, duration = $5, "album_id" = $6 WHERE id = $7 RETURNING id',
       values: [title, year, genre, performer, duration, albumId, id],
     };
     const result = await this._pool.query(query);

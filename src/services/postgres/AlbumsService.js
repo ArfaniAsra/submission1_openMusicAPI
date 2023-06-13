@@ -1,7 +1,6 @@
 const { Pool } = require('pg');
 const { nanoid } = require('nanoid');
 const InvariantError = require('../../exceptions/InvariantError');
-const { mapDBToModel } = require('../../utils');
 const NotFoundError = require('../../exceptions/NotFoundError');
 
 class AlbumsService {
@@ -10,7 +9,7 @@ class AlbumsService {
   }
 
   async addAlbum({ name, year }) {
-    const id = nanoid(16);
+    const id = `album-${nanoid(16)}`;
 
     const query = {
       text: 'INSERT INTO albums VALUES($1, $2, $3) RETURNING id',
@@ -28,14 +27,14 @@ class AlbumsService {
 
   async getAlbumById(id) {
     const query = {
-      text: 'SELECT id, name, year FROM albums WHERE id = $1',
+      text: 'SELECT * FROM albums WHERE id = $1',
       values: [id],
     };
 
     const result = await this._pool.query(query);
 
     const querySongs = {
-      text: 'SELECT id, title, performer FROM songs WHERE "albumId" = $1',
+      text: 'SELECT id, title, performer FROM songs WHERE "album_id" = $1',
       values: [id],
     };
 
@@ -46,9 +45,10 @@ class AlbumsService {
     }
 
     return {
-      id: result.rows.map(mapDBToModel)[0].id,
-      name: result.rows.map(mapDBToModel)[0].name,
-      year: result.rows.map(mapDBToModel)[0].year,
+      id: result.rows[0].id,
+      name: result.rows[0].name,
+      coverUrl: result.rows[0].coverUrl,
+      year: result.rows[0].year,
       songs: resultSongs.rows,
     };
   }
@@ -77,6 +77,16 @@ class AlbumsService {
     if (!result.rows.length) {
       throw new NotFoundError('Catatan gagal dihapus. Id tidak ditemukan');
     }
+  }
+
+  async addCoverAlbum({ id, coverUrl }) {
+    const query = {
+      text: 'UPDATE albums SET "coverUrl" = $1 WHERE id = $2',
+      values: [coverUrl, id],
+    };
+
+    const result = await this._pool.query(query);
+    return result.rows;
   }
 }
 
