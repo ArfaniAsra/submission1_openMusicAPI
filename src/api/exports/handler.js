@@ -16,11 +16,12 @@ class ExportSongsHandler {
     const { id: credentialId } = request.auth.credentials;
     const { playlistId } = request.params;
 
-    await this._playlistSongsService.verifyPlaylistExists(playlistId);
     await this._playlistsService.verifyPlaylistOwner(playlistId, credentialId);
+    await this._playlistSongsService.verifyPlaylistExists(playlistId);
 
     const message = {
       userId: request.auth.credentials.id,
+      playlistId,
       targetEmail: request.payload.targetEmail,
     };
 
