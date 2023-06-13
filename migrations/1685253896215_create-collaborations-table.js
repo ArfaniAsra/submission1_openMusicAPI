@@ -1,5 +1,4 @@
 /* eslint-disable max-len */
-/* eslint-disable camelcase */
 
 exports.up = (pgm) => {
   // membuat tabel collaborations
